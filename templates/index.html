@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Horarios</title>
+</head>
+<body>
+    <h1>Selecciona tus materias</h1>
+    <form id="materiasForm">
+        {% for materia in materias %}
+            <input type="checkbox" name="materias_seleccionadas" value="{{ materia }}"
+                   {% if materia in materias_seleccionadas %}checked="checked"{% endif %}>
+                   {{ materia }}<br>
+        {% endfor %}
+        <br>
+    </form>
+
+    <div id="combinaciones">
+        {% if combinaciones %}
+            <h2>Combinaciones</h2>
+            {% for opcion in combinaciones %}
+                <h3>Combinación {{ loop.index }}:</h3>
+                <ul>
+                    {% for horario in opcion %}
+                        <!-- Intercambiamos la posición de la materia y el tipo (teórico/práctico) -->
+                        <li>{{ horario.dia }} {{ horario.hora }} -> {{ horario.materia }} ({{ horario.tipo }})</li>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Función para manejar el cambio en los checkboxes
+            function updateCombinaciones() {
+                var materiasSeleccionadas = Array.from(document.querySelectorAll('input[name="materias_seleccionadas"]:checked')).map(function(el) {
+                    return el.value;
+                });
+
+                fetch('/get_combinaciones', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({materias_seleccionadas: materiasSeleccionadas}),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('combinaciones').innerHTML = data.combinaciones_html;
+                })
+                .catch(error => {
+                    console.error('Error al actualizar combinaciones:', error);
+                });
+            }
+
+            // Agregar el event listener a cada checkbox
+            document.querySelectorAll('input[name="materias_seleccionadas"]').forEach(function(checkbox) {
+                checkbox.addEventListener('change', updateCombinaciones);
+            });
+
+            // Inicializar las combinaciones al cargar la página
+            updateCombinaciones();
+        }); // Este paréntesis cierra el eventListener de 'DOMContentLoaded'
+    </script>
+
+
+
+</body>
+</html>

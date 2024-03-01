@@ -1,0 +1,13 @@
+{% if mensaje %}
+    <p>{{ mensaje }}</p>
+{% else %}
+    <h2>Combinaciones</h2>
+    {% for opcion in combinaciones %}
+        <h3>Combinación {{ loop.index }}:</h3>
+        <ul>
+            {% for horario in opcion %}
+                <li>{{ horario.dia }} {{ horario.hora }} -> {{ horario.materia }} ({{ horario.tipo }})</li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+{% endif %}
