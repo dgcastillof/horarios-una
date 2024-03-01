@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Horarios</title>
 </head>
-<body>
-    <h1>Selecciona tus materias</h1>
+    <body>
+    <h1>Selecciona tus materias y tus horarios disponibles</h1>
     <form id="materiasForm">
         {% for materia in materias %}
             <input type="checkbox" name="materias_seleccionadas" value="{{ materia }}"
@@ -14,6 +14,10 @@
                    {{ materia }}<br>
         {% endfor %}
         <br>
+        <h2>Horarios disponibles</h2>
+        <label><input type="checkbox" name="turnos_seleccionados" value="mañana"> Mañana</label><br>
+        <label><input type="checkbox" name="turnos_seleccionados" value="tarde"> Tarde</label><br>
+        <label><input type="checkbox" name="turnos_seleccionados" value="noche"> Noche</label><br>
     </form>
 
     <div id="combinaciones">
@@ -31,34 +35,63 @@
         {% endif %}
     </div>
 
+    <p style="font-size: small; text-align: left;">
+        Seguime en Twitter
+        <a href="https://x.com/shocasti" target="_blank">@shocasti</a>
+    </p>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Función para manejar el cambio en los checkboxes
-            function updateCombinaciones() {
-                var materiasSeleccionadas = Array.from(document.querySelectorAll('input[name="materias_seleccionadas"]:checked')).map(function(el) {
-                    return el.value;
-                });
+            // Función para manejar el cambio en los checkboxes de materias y horarios disponibles
+                function updateCombinaciones() {
+            var materiasSeleccionadas = Array.from(document.querySelectorAll('input[name="materias_seleccionadas"]:checked')).map(el => el.value);
+            var turnosSeleccionados = Array.from(document.querySelectorAll('input[name="turnos_seleccionados"]:checked')).map(el => el.value);
 
-                fetch('/get_combinaciones', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({materias_seleccionadas: materiasSeleccionadas}),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('combinaciones').innerHTML = data.combinaciones_html;
-                })
-                .catch(error => {
-                    console.error('Error al actualizar combinaciones:', error);
-                });
-            }
+            fetch('/get_combinaciones', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    materias_seleccionadas: materiasSeleccionadas,
+                    turnos_seleccionados: turnosSeleccionados  // Asegúrate de que el nombre de la clave aquí sea correcto
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const combinacionesContainer = document.getElementById('combinaciones');
+                combinacionesContainer.innerHTML = ''; // Limpiar el contenedor
+                // Verificar si hay un mensaje para mostrar
+                if (data.mensaje) {
+                    combinacionesContainer.innerHTML = `<p>${data.mensaje}</p>`;
+                } else if (data.combinaciones.length > 0) {
+                    // Si hay combinaciones, mostrarlas
+                    data.combinaciones.forEach((combinacion, index) => {
+                        const combinacionElement = document.createElement('div');
+                        combinacionElement.innerHTML = `<h3>Combinación ${index + 1}:</h3>`;
+                        combinacion.forEach(horario => {
+                            combinacionElement.innerHTML += `<li>${horario.dia} ${horario.hora} -> ${horario.materia} (${horario.tipo})</li>`;
+                        });
+                        combinacionesContainer.appendChild(combinacionElement);
+                    });
+                } else {
+                    // Si no hay mensaje ni combinaciones, mostrar mensaje por defecto
+                    combinacionesContainer.innerHTML = 'No hay combinaciones posibles, a menos que consigas un Giratiempo.';
+                }
+            })
+            .catch(error => {
+                console.error('Error al actualizar combinaciones:', error);
+            });
+        }
 
             // Agregar el event listener a cada checkbox
-            document.querySelectorAll('input[name="materias_seleccionadas"]').forEach(function(checkbox) {
+            document.querySelectorAll('input[name="turnos_seleccionados"]').forEach(checkbox => {
                 checkbox.addEventListener('change', updateCombinaciones);
             });
+
+            document.querySelectorAll('input[name="materias_seleccionadas"]').forEach(checkbox => {
+            checkbox.addEventListener('change', updateCombinaciones);
+        });
 
             // Inicializar las combinaciones al cargar la página
             updateCombinaciones();
