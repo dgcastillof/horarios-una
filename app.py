@@ -1,8 +1,12 @@
 from flask import Flask, render_template, request
 from itertools import product
 from flask import jsonify
+import os
 
 app = Flask(__name__)
+
+# Obtener el puerto del entorno o usar 5000 como puerto predeterminado
+port = int(os.environ.get("PORT", 5000))
 
 # Definir horarios y materias
 horarios = {
@@ -136,5 +140,6 @@ def get_combinaciones():
     combinaciones_html = render_template('combinaciones.html', combinaciones=combinaciones, mensaje=mensaje)
     return jsonify(combinaciones_html=combinaciones_html)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    # Iniciar la aplicación en el puerto especificado
+    app.run(host="0.0.0.0", port=port)
