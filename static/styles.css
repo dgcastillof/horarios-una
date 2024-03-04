@@ -1,0 +1,18 @@
+/* Importar la fuente Roboto de Google Fonts */
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+
+/* Establecer el fondo y la fuente para todo el documento */
+body {
+  background-color: #821E6E; /* Color de fondo violeta */
+  font-family: 'Roboto', sans-serif; /* Fuente Roboto */
+  color: white; /* Color de texto blanco, o el que prefieras */
+}
+
+/* Estilos para la imagen de cabecera */
+.header-image {
+  width: 200px; /* o el tamaño que prefieras */
+  height: auto; /* esto mantendrá la proporción de la imagen */
+  display: block;
+  background-color: white; /* fondo blanco detrás de la imagen */
+  padding: 10px; /* espacio alrededor de la imagen para que el fondo blanco se vea como un borde */
+}
