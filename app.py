@@ -9,198 +9,32 @@ app = Flask(__name__)
 port = int(os.environ.get("PORT", 5000))
 
 # Definir horarios y materias
-horarios = {
-    'Taller de Narrativa I': {
-        'opcion_A': [
-            {'dia': 'Martes', 'hora': '11:00-13:00', 'tipo': 'Teórico', 'turnos': ['mañana']},
-            {'dia': 'Lunes', 'hora': '18:00-22:00', 'tipo': 'Práctico', 'turnos': ['noche']},
-        ],
-        'opcion_B': [
-            {'dia': 'Martes', 'hora': '11:00-13:00', 'tipo': 'Teórico', 'turnos': ['mañana']},
-            {'dia': 'Martes', 'hora': '14:00-18:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-        'opcion_C': [
-            {'dia': 'Martes', 'hora': '11:00-13:00', 'tipo': 'Teórico', 'turnos': ['mañana']},
-            {'dia': 'Miércoles', 'hora': '14:00-18:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-        'opcion_D': [
-            {'dia': 'Martes', 'hora': '11:00-13:00', 'tipo': 'Teórico', 'turnos': ['mañana']},
-            {'dia': 'Miércoles', 'hora': '18:00-22:00', 'tipo': 'Práctico', 'turnos': ['noche']},
-        ],
-        'opcion_E': [
-            {'dia': 'Martes', 'hora': '11:00-13:00', 'tipo': 'Teórico', 'turnos': ['mañana']},
-            {'dia': 'Jueves', 'hora': '09:00-13:00', 'tipo': 'Práctico', 'turnos': ['mañana']},
-        ],
-        'opcion_F': [
-            {'dia': 'Martes', 'hora': '11:00-13:00', 'tipo': 'Teórico', 'turnos': ['mañana']},
-            {'dia': 'Viernes', 'hora': '09:00-13:00', 'tipo': 'Práctico', 'turnos': ['mañana']},
-        ],
-        'opcion_G': [
-            {'dia': 'Martes', 'hora': '18:30-20:30', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Lunes', 'hora': '18:00-22:00', 'tipo': 'Práctico', 'turnos': ['noche']},
-        ],
-        'opcion_H': [
-            {'dia': 'Martes', 'hora': '18:30-20:30', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Martes', 'hora': '14:00-18:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-        'opcion_I': [
-            {'dia': 'Martes', 'hora': '18:30-20:30', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Miércoles', 'hora': '14:00-18:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-        'opcion_J': [
-            {'dia': 'Martes', 'hora': '18:30-20:30', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Miércoles', 'hora': '18:00-22:00', 'tipo': 'Práctico', 'turnos': ['noche']},
-        ],
-        'opcion_K': [
-            {'dia': 'Martes', 'hora': '18:30-20:30', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Jueves', 'hora': '09:00-13:00', 'tipo': 'Práctico', 'turnos': ['mañana']},
-        ],
-        'opcion_L': [
-            {'dia': 'Martes', 'hora': '18:30-20:30', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Viernes', 'hora': '09:00-13:00', 'tipo': 'Práctico', 'turnos': ['mañana']},
-        ],
-    },
-    'Taller de Poesía I': {
-        'opcion_A': [
-            {'dia': 'Lunes', 'hora': '18:30-20:30', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Martes', 'hora': '18:00-22:00', 'tipo': 'Práctico', 'turnos': ['noche']},
-        ],
-        'opcion_B': [
-            {'dia': 'Lunes', 'hora': '18:30-20:30', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Miércoles', 'hora': '14:00-18:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-        'opcion_C': [
-            {'dia': 'Lunes', 'hora': '18:30-20:30', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Jueves', 'hora': '09:00-13:00', 'tipo': 'Práctico', 'turnos': ['mañana']},
-        ],
-        'opcion_D': [
-            {'dia': 'Lunes', 'hora': '18:30-20:30', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Jueves', 'hora': '18:00-22:00', 'tipo': 'Práctico', 'turnos': ['noche']},
-        ],
-        'opcion_E': [
-            {'dia': 'Lunes', 'hora': '18:30-20:30', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Viernes', 'hora': '14:00-18:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-        'opcion_F': [
-            {'dia': 'Viernes', 'hora': '09:30-11:30', 'tipo': 'Teórico', 'turnos': ['mañana']},
-            {'dia': 'Martes', 'hora': '18:00-22:00', 'tipo': 'Práctico', 'turnos': ['noche']},
-        ],
-        'opcion_G': [
-            {'dia': 'Viernes', 'hora': '09:30-11:30', 'tipo': 'Teórico', 'turnos': ['mañana']},
-            {'dia': 'Miércoles', 'hora': '14:00-18:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-        'opcion_H': [
-            {'dia': 'Viernes', 'hora': '09:30-11:30', 'tipo': 'Teórico', 'turnos': ['mañana']},
-            {'dia': 'Jueves', 'hora': '09:00-13:00', 'tipo': 'Práctico', 'turnos': ['mañana']},
-        ],
-        'opcion_I': [
-            {'dia': 'Viernes', 'hora': '09:30-11:30', 'tipo': 'Teórico', 'turnos': ['mañana']},
-            {'dia': 'Jueves', 'hora': '18:00-22:00', 'tipo': 'Práctico', 'turnos': ['noche']},
-        ],
-        'opcion_J': [
-            {'dia': 'Viernes', 'hora': '09:30-11:30', 'tipo': 'Teórico', 'turnos': ['mañana']},
-            {'dia': 'Viernes', 'hora': '14:00-18:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-    },
-    'Morfología y Sintaxis': {
-        'opcion_A': [
-            {'dia': 'Viernes', 'hora': '18:00-22:00', 'tipo': 'Teórico', 'turnos': ['noche']},
-            {'dia': 'Martes', 'hora': '14:00-16:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-        'opcion_B': [
-            {'dia': 'Viernes', 'hora': '18:00-22:00', 'tipo': 'Teórico', 'turnos': ['noche']},
-            {'dia': 'Martes', 'hora': '16:00-18:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-        'opcion_C': [
-            {'dia': 'Viernes', 'hora': '18:00-22:00', 'tipo': 'Teórico', 'turnos': ['noche']},
-            {'dia': 'Miércoles', 'hora': '18:00-20:00', 'tipo': 'Práctico', 'turnos': ['tarde', 'noche']},
-        ],
-        'opcion_D': [
-            {'dia': 'Viernes', 'hora': '18:00-22:00', 'tipo': 'Teórico', 'turnos': ['noche']},
-            {'dia': 'Miércoles', 'hora': '20:00-22:00', 'tipo': 'Práctico', 'turnos': ['noche']},
-        ],
-        'opcion_E': [
-            {'dia': 'Viernes', 'hora': '18:00-22:00', 'tipo': 'Teórico', 'turnos': ['noche']},
-            {'dia': 'Lunes', 'hora': '10:00-12:00', 'tipo': 'Práctico', 'turnos': ['mañana']},
-        ],
-        'opcion_F': [
-            {'dia': 'Viernes', 'hora': '18:00-22:00', 'tipo': 'Teórico', 'turnos': ['noche']},
-            {'dia': 'Lunes', 'hora': '12:00-14:00', 'tipo': 'Práctico', 'turnos': ['mañana', 'tarde']},
-        ],
-    },
-    'Teoría y Análisis de las Artes de la Escritura': {
-        'opcion_A': [
-            {'dia': 'Miércoles', 'hora': '11:00-13:00', 'tipo': 'Teórico', 'turnos': ['mañana']},
-            {'dia': 'Miércoles', 'hora': '09:00-11:00', 'tipo': 'Práctico', 'turnos': ['mañana']},
-        ],
-        'opcion_B': [
-            {'dia': 'Miércoles', 'hora': '11:00-13:00', 'tipo': 'Teórico', 'turnos': ['mañana']},
-            {'dia': 'Miércoles', 'hora': '18:00-20:00', 'tipo': 'Práctico', 'turnos': ['tarde', 'noche']},
-        ],
-        'opcion_C': [
-            {'dia': 'Miércoles', 'hora': '20:00-22:00', 'tipo': 'Teórico', 'turnos': ['noche']},
-            {'dia': 'Miércoles', 'hora': '09:00-11:00', 'tipo': 'Práctico', 'turnos': ['mañana']},
-        ],
-        'opcion_D': [
-            {'dia': 'Miércoles', 'hora': '20:00-22:00', 'tipo': 'Teórico', 'turnos': ['noche']},
-            {'dia': 'Miércoles', 'hora': '18:00-20:00', 'tipo': 'Práctico', 'turnos': ['tarde', 'noche']},
-        ],
-    },
-    'Narrativa Argentina I': {
-        'opcion_A': [
-            {'dia': 'Jueves', 'hora': '18:00-20:00', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Miércoles', 'hora': '16:00-18:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-        'opcion_B': [
-            {'dia': 'Jueves', 'hora': '18:00-20:00', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Miércoles', 'hora': '18:00-20:00', 'tipo': 'Práctico', 'turnos': ['tarde', 'noche']},
-        ],
-        'opcion_C': [
-            {'dia': 'Jueves', 'hora': '18:00-20:00', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Martes', 'hora': '14:00-16:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-        'opcion_D': [
-            {'dia': 'Jueves', 'hora': '18:00-20:00', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Martes', 'hora': '16:00-18:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-    },
-    'Narrativa Latinoamericana I': {
-        'opcion_A': [
-            {'dia': 'Jueves', 'hora': '18:00-20:00', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Jueves', 'hora': '11:00-13:00', 'tipo': 'Práctico', 'turnos': ['mañana']},
-        ],
-        'opcion_B': [
-            {'dia': 'Jueves', 'hora': '18:00-20:00', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Jueves', 'hora': '14:00-16:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-        'opcion_C': [
-            {'dia': 'Jueves', 'hora': '18:00-20:00', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Jueves', 'hora': '16:00-18:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-        'opcion_D': [
-            {'dia': 'Jueves', 'hora': '18:00-20:00', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Jueves', 'hora': '20:00-22:00', 'tipo': 'Práctico', 'turnos': ['noche']},
-        ],
-    },
-    'Poesía Universal I': {
-        'opcion_A': [
-            {'dia': 'Miércoles', 'hora': '18:00-20:00', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Martes', 'hora': '15:00-17:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-        'opcion_B': [
-            {'dia': 'Miércoles', 'hora': '18:00-20:00', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Martes', 'hora': '17:00-19:00', 'tipo': 'Práctico', 'turnos': ['tarde', 'noche']},
-        ],
-        'opcion_C': [
-            {'dia': 'Miércoles', 'hora': '18:00-20:00', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Miércoles', 'hora': '14:00-16:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-        'opcion_D': [
-            {'dia': 'Miércoles', 'hora': '18:00-20:00', 'tipo': 'Teórico', 'turnos': ['tarde', 'noche']},
-            {'dia': 'Miércoles', 'hora': '16:00-18:00', 'tipo': 'Práctico', 'turnos': ['tarde']},
-        ],
-    }
-}
+import csv
+
+
+
+horarios = {}
+
+with open('horarios.csv', newline='', encoding='latin-1') as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        curso = row['curso']
+        opcion = row['opcion']
+        dia = row['dia']
+        hora = row['hora']
+        tipo = row['tipo']
+        if row['turno'] is not None:
+            turnos = row['turno'].split(' ')
+        else:
+            turnos = []
+
+        if curso not in horarios:
+            horarios[curso] = {}
+        if opcion not in horarios[curso]:
+            horarios[curso][opcion] = []
+
+        horarios[curso][opcion].append({'dia': dia, 'hora': hora, 'tipo': tipo, 'turnos': turnos})
+
 # Función aux
 # iliar para extraer la hora de inicio como un valor numérico
 def obtener_hora_inicio(horario):
