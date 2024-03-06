@@ -16,3 +16,11 @@ body {
   background-color: white; /* fondo blanco detrás de la imagen */
   padding: 10px; /* espacio alrededor de la imagen para que el fondo blanco se vea como un borde */
 }
+
+.combinacion { background-color: #7a4f9e; padding: 10px; margin-bottom: 10px; color: white; }
+.combinacion:nth-child(even) { background-color: #9e7ac0; }
+
+#combinaciones {
+    margin-top: 20px; /* Ajusta el valor según necesites */
+    margin-bottom: 20px; /* Ajusta el valor según necesites */
+}

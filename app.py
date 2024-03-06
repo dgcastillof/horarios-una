@@ -66,6 +66,7 @@ def hay_superposicion(horarios):
 
 # Función para generar todas las combinaciones posibles
 def generar_combinaciones(materias_seleccionadas, horarios, turnos_seleccionados):
+    print("Generando combinaciones para:", materias_seleccionadas, "con turnos", turnos_seleccionados)
     if not materias_seleccionadas:
         return []
 
@@ -88,26 +89,52 @@ def generar_combinaciones(materias_seleccionadas, horarios, turnos_seleccionados
                     'hora': horario_individual['hora'],
                     'tipo': horario_individual['tipo'],
                     'materia': materias_seleccionadas[i],
-                    'turnos': horario_individual['turnos']  # Asegúrate de que esta línea esté presente
+                    'turnos': horario_individual['turnos']
                 }
                 combinacion_actual.append(horario_actual)
 
         if cumple_horarios_disponibles(combinacion_actual, turnos_seleccionados):
             if not hay_superposicion(combinacion_actual):
+                # Ordenar la combinación actual antes de añadirla a la lista final
                 combinacion_actual.sort(key=ordenar_horarios)
-                combinaciones_en_lista.append(combinacion_actual)
+                print("Combinación sin superposición y cumple turnos:", combinacion_actual)
+                combinaciones_en_lista.append(combinacion_actual)  # Añadir la combinación válida ya ordenada
+            else:
+                print("Combinación descartada por superposición.")
+        else:
+            print("Combinación no cumple con los turnos disponibles.")
 
+    print("Combinaciones finales generadas:", combinaciones_en_lista)
     return combinaciones_en_lista
 
+
 def cumple_horarios_disponibles(combinacion, turnos_seleccionados):
+    # Convertir los turnos seleccionados en un conjunto para una búsqueda más eficiente
+    turnos_seleccionados_set = set(turnos_seleccionados)
+
     for horario in combinacion:
-        # Asegúrate de que 'horario' tenga la clave 'turnos' antes de proceder
-        turnos_horario = horario.get('turnos')
-        if turnos_horario is None:
-            continue  # o manejar de otra manera si no debería suceder
-        if not any(turno in turnos_seleccionados for turno in turnos_horario):
+        # Convertir el día del horario a minúsculas y quitar acentos si es necesario
+        dia_horario = horario['dia'].lower().replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó',
+                                                                                                           'o').replace(
+            'ú', 'u')
+
+        # Verificar si algún turno del horario está en los turnos seleccionados
+        turno_valido = False
+        for turno_horario in horario['turnos']:
+            # Construir la cadena de día-turno para la verificación
+            dia_turno_horario = f"{dia_horario}-{turno_horario}"
+            if dia_turno_horario in turnos_seleccionados_set:
+                turno_valido = True
+                break
+
+        # Si no se encontró un turno válido, la combinación actual no cumple con los requisitos
+        if not turno_valido:
+            print(f"Combinación descartada: {horario} no cumple con los turnos disponibles.")
             return False
+
+    # Si todas las verificaciones pasan, la combinación es válida
     return True
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -124,6 +151,8 @@ def index():
 @app.route('/get_combinaciones', methods=['POST'])
 def get_combinaciones():
     data = request.json
+    print("Materias seleccionadas:", data.get('materias_seleccionadas'))
+    print("Turnos seleccionados:", data.get('turnos_seleccionados'))
     materias_seleccionadas = data.get('materias_seleccionadas', [])
     turnos_seleccionados = data.get('turnos_seleccionados', [])
 

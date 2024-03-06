@@ -1,5 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+        <style>
+            .grid-container {
+                display: grid;
+                grid-template-columns: auto repeat(5, 1fr); /* 1 columna para los turnos y 5 para los días */
+                gap: 5px; /* Espacio entre celdas */
+                align-items: center;
+                text-align: center;
+            }
+            .grid-container > div {
+                padding: 5px; /* Espaciado dentro de las celdas */
+            }
+            .turno {
+                grid-column: 1; /* Ubica los turnos en la primera columna */
+            }
+            .dia {
+                background-color: #7a4f9e; /* Color de fondo para los días */
+                color: white;
+            }
+            .checkbox-container {
+                display: flex;
+                justify-content: center; /* Centra el contenido de la celda */
+            }
+        </style>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +31,7 @@
 </head>
     <body>
     <img src="{{ url_for('static', filename='ca.svg') }}" alt="Descripción de la imagen" class="header-image">
-    <h1>Selecciona tus materias y tus horarios disponibles</h1>
+    <h1>Selecciona las materias que querés cursar</h1>
     <form id="materiasForm">
         {% for materia in materias %}
             <input type="checkbox" name="materias_seleccionadas" value="{{ materia }}"
@@ -16,20 +39,47 @@
                    {{ materia }}<br>
         {% endfor %}
         <br>
-        <h2>Horarios disponibles</h2>
-        <label><input type="checkbox" name="turnos_seleccionados" value="mañana"> Mañana</label><br>
-        <label><input type="checkbox" name="turnos_seleccionados" value="tarde"> Tarde</label><br>
-        <label><input type="checkbox" name="turnos_seleccionados" value="noche"> Noche</label><br>
+
+    <br> <!-- Espacio adicional antes del título, si es necesario -->
+    <h1>Selecciona los horarios que tenés disponibles para cursar</h1>
+        <div class="grid-container">
+            <div class="turno"></div> <!-- Espacio vacío para la esquina superior izquierda -->
+            <div class="dia">Lunes</div>
+            <div class="dia">Martes</div>
+            <div class="dia">Miércoles</div>
+            <div class="dia">Jueves</div>
+            <div class="dia">Viernes</div>
+            {% for turno in ["Mañana", "Tarde", "Noche"] %}
+                <div class="turno">{{ turno }}</div> <!-- Encabezado de turno -->
+                {% for dia in ["lunes", "martes", "miercoles", "jueves", "viernes"] %}
+                    <div class="checkbox-container">
+                        <input type="checkbox" name="turnos_seleccionados" value="{{dia}}-{{turno|lower}}" checked>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+
+
+        <div style="margin-top: 20px;"></div> <!-- Ajusta el valor de 20px según necesites -->
+        <div id="seleccion-turno">
+            <input type="radio" id="mañana" name="turno" value="mañana">
+            <label for="mañana">Solo turno mañana</label><br>
+            <input type="radio" id="tarde" name="turno" value="tarde">
+            <label for="tarde">Solo turno tarde</label><br>
+            <input type="radio" id="noche" name="turno" value="noche">
+            <label for="noche">Solo turno noche</label><br>
+            <input type="radio" id="personalizado" name="turno" value="personalizado" checked>
+            <label for="personalizado">Personalizado</label><br>
+        </div>
     </form>
 
     <div id="combinaciones">
+        <h2>Posibles calendarios de cursada</h2> <!-- Este título debería estar siempre visible -->
         {% if combinaciones %}
-            <h2>Combinaciones</h2>
             {% for opcion in combinaciones %}
                 <h3>Combinación {{ loop.index }}:</h3>
                 <ul>
                     {% for horario in opcion %}
-                        <!-- Intercambiamos la posición de la materia y el tipo (teórico/práctico) -->
                         <li>{{ horario.dia }} {{ horario.hora }} -> {{ horario.materia }} ({{ horario.tipo }})</li>
                     {% endfor %}
                 </ul>
@@ -37,68 +87,84 @@
         {% endif %}
     </div>
 
+
     <p style="font-size: small; text-align: left;">
         Seguime en Twitter
         <a href="https://x.com/shocasti" target="_blank">@shocasti</a>
     </p>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Función para manejar el cambio en los checkboxes de materias y horarios disponibles
-                function updateCombinaciones() {
-            var materiasSeleccionadas = Array.from(document.querySelectorAll('input[name="materias_seleccionadas"]:checked')).map(el => el.value);
-            var turnosSeleccionados = Array.from(document.querySelectorAll('input[name="turnos_seleccionados"]:checked')).map(el => el.value);
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                function updateTurnoSelection() {
+                    const turnoSeleccionado = document.querySelector('input[name="turno"]:checked').value;
+                    const checkboxes = document.querySelectorAll('.checkbox-container input[type="checkbox"]');
 
-            fetch('/get_combinaciones', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    materias_seleccionadas: materiasSeleccionadas,
-                    turnos_seleccionados: turnosSeleccionados  // Asegúrate de que el nombre de la clave aquí sea correcto
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                const combinacionesContainer = document.getElementById('combinaciones');
-                combinacionesContainer.innerHTML = ''; // Limpiar el contenedor
-                // Verificar si hay un mensaje para mostrar
-                if (data.mensaje) {
-                    combinacionesContainer.innerHTML = `<p>${data.mensaje}</p>`;
-                } else if (data.combinaciones.length > 0) {
-                    // Si hay combinaciones, mostrarlas
-                    data.combinaciones.forEach((combinacion, index) => {
-                        const combinacionElement = document.createElement('div');
-                        combinacionElement.innerHTML = `<h3>Combinación ${index + 1}:</h3>`;
-                        combinacion.forEach(horario => {
-                            combinacionElement.innerHTML += `<li>${horario.dia} ${horario.hora} -> ${horario.materia} (${horario.tipo})</li>`;
-                        });
-                        combinacionesContainer.appendChild(combinacionElement);
+                    checkboxes.forEach(checkbox => {
+                        const [dia, turno] = checkbox.value.split("-");
+                        if (turnoSeleccionado === "personalizado") {
+                            checkbox.checked = true;
+                            checkbox.disabled = false;
+                        } else {
+                            checkbox.checked = turnoSeleccionado === turno;
+                            checkbox.disabled = turnoSeleccionado !== "personalizado";
+                        }
                     });
-                } else {
-                    // Si no hay mensaje ni combinaciones, mostrar mensaje por defecto
-                    combinacionesContainer.innerHTML = 'No hay combinaciones posibles, a menos que consigas un Giratiempo.';
+
+                    // Siempre llama a updateCombinaciones para reflejar los cambios.
+                    updateCombinaciones();
                 }
-            })
-            .catch(error => {
-                console.error('Error al actualizar combinaciones:', error);
+
+                function updateCombinaciones() {
+                    var materiasSeleccionadas = Array.from(document.querySelectorAll('input[name="materias_seleccionadas"]:checked')).map(el => el.value);
+                    var turnosSeleccionados = Array.from(document.querySelectorAll('input[name="turnos_seleccionados"]:checked')).map(el => el.value);
+
+                    fetch('/get_combinaciones', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            materias_seleccionadas: materiasSeleccionadas,
+                            turnos_seleccionados: turnosSeleccionados
+                        }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const combinacionesContainer = document.getElementById('combinaciones');
+                        combinacionesContainer.innerHTML = ''; // Limpiar el contenedor
+                        if (data.mensaje) {
+                            combinacionesContainer.innerHTML = `<p>${data.mensaje}</p>`;
+                        } else if (data.combinaciones.length > 0) {
+                            data.combinaciones.forEach((combinacion, index) => {
+                                const combinacionElement = document.createElement('div');
+                                combinacionElement.className = 'combinacion';
+                                combinacionElement.innerHTML = `<h3>Combinación ${index + 1}:</h3>`;
+                                combinacion.forEach(horario => {
+                                    combinacionElement.innerHTML += `<li>${horario.dia} ${horario.hora} -> ${horario.materia} (${horario.tipo})</li>`;
+                                });
+                                combinacionesContainer.appendChild(combinacionElement);
+                            });
+                        } else {
+                            combinacionesContainer.innerHTML = 'No hay combinaciones posibles, a menos que consigas un Giratiempo.';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al actualizar combinaciones:', error);
+                    });
+                }
+
+                document.querySelectorAll('input[type="radio"][name="turno"]').forEach(radio => {
+                    radio.addEventListener('change', updateTurnoSelection);
+                });
+
+                document.querySelectorAll('input[name="turnos_seleccionados"], input[name="materias_seleccionadas"]').forEach(checkbox => {
+                    checkbox.addEventListener('change', updateTurnoSelection); // Se cambia para llamar a updateTurnoSelection, que ya maneja la llamada a updateCombinaciones
+                });
+
+                updateTurnoSelection(); // Esto garantiza que la selección inicial se aplique correctamente.
             });
-        }
+        </script>
 
-            // Agregar el event listener a cada checkbox
-            document.querySelectorAll('input[name="turnos_seleccionados"]').forEach(checkbox => {
-                checkbox.addEventListener('change', updateCombinaciones);
-            });
-
-            document.querySelectorAll('input[name="materias_seleccionadas"]').forEach(checkbox => {
-            checkbox.addEventListener('change', updateCombinaciones);
-        });
-
-            // Inicializar las combinaciones al cargar la página
-            updateCombinaciones();
-        }); // Este paréntesis cierra el eventListener de 'DOMContentLoaded'
-    </script>
 
 
 
