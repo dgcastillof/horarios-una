@@ -94,76 +94,86 @@
     </p>
 
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                function updateTurnoSelection() {
-                    const turnoSeleccionado = document.querySelector('input[name="turno"]:checked').value;
-                    const checkboxes = document.querySelectorAll('.checkbox-container input[type="checkbox"]');
+        document.addEventListener('DOMContentLoaded', function() {
+            function updateTurnoSelection() {
+                const turnoSeleccionado = document.querySelector('input[name="turno"]:checked').value;
+                const checkboxes = document.querySelectorAll('.checkbox-container input[type="checkbox"]');
 
+                // Marca todos los checkboxes y los habilita si "Personalizado" está seleccionado
+                if (turnoSeleccionado === "personalizado") {
                     checkboxes.forEach(checkbox => {
-                        const [dia, turno] = checkbox.value.split("-");
-                        if (turnoSeleccionado === "personalizado") {
+                        checkbox.checked = true;
+                        checkbox.disabled = false;
+                    });
+                } else {
+                    // Para los turnos específicos, se marcan y deshabilitan los checkboxes correspondientes
+                    checkboxes.forEach(checkbox => {
+                        const [dia, turnoCheckbox] = checkbox.value.split("-");
+                        if (turnoSeleccionado === turnoCheckbox) {
                             checkbox.checked = true;
-                            checkbox.disabled = false;
                         } else {
-                            checkbox.checked = turnoSeleccionado === turno;
-                            checkbox.disabled = turnoSeleccionado !== "personalizado";
+                            checkbox.checked = false;
                         }
+                        checkbox.disabled = true; // Deshabilitar para evitar modificaciones
                     });
-
-                    // Siempre llama a updateCombinaciones para reflejar los cambios.
-                    updateCombinaciones();
                 }
 
-                function updateCombinaciones() {
-                    var materiasSeleccionadas = Array.from(document.querySelectorAll('input[name="materias_seleccionadas"]:checked')).map(el => el.value);
-                    var turnosSeleccionados = Array.from(document.querySelectorAll('input[name="turnos_seleccionados"]:checked')).map(el => el.value);
+                // Llama a updateCombinaciones independientemente del radio seleccionado para actualizar las combinaciones
+                updateCombinaciones();
+            }
 
-                    fetch('/get_combinaciones', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            materias_seleccionadas: materiasSeleccionadas,
-                            turnos_seleccionados: turnosSeleccionados
-                        }),
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        const combinacionesContainer = document.getElementById('combinaciones');
-                        combinacionesContainer.innerHTML = ''; // Limpiar el contenedor
-                        if (data.mensaje) {
-                            combinacionesContainer.innerHTML = `<p>${data.mensaje}</p>`;
-                        } else if (data.combinaciones.length > 0) {
-                            data.combinaciones.forEach((combinacion, index) => {
-                                const combinacionElement = document.createElement('div');
-                                combinacionElement.className = 'combinacion';
-                                combinacionElement.innerHTML = `<h3>Combinación ${index + 1}:</h3>`;
-                                combinacion.forEach(horario => {
-                                    combinacionElement.innerHTML += `<li>${horario.dia} ${horario.hora} -> ${horario.materia} (${horario.tipo})</li>`;
-                                });
-                                combinacionesContainer.appendChild(combinacionElement);
+            function updateCombinaciones() {
+                var materiasSeleccionadas = Array.from(document.querySelectorAll('input[name="materias_seleccionadas"]:checked')).map(el => el.value);
+                var turnosSeleccionados = Array.from(document.querySelectorAll('input[name="turnos_seleccionados"]:checked')).map(el => el.value);
+
+                fetch('/get_combinaciones', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        materias_seleccionadas: materiasSeleccionadas,
+                        turnos_seleccionados: turnosSeleccionados
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const combinacionesContainer = document.getElementById('combinaciones');
+                    combinacionesContainer.innerHTML = ''; // Limpiar el contenedor previo a añadir nuevas combinaciones
+                    if (data.mensaje) {
+                        combinacionesContainer.innerHTML = `<p>${data.mensaje}</p>`;
+                    } else if (data.combinaciones.length > 0) {
+                        data.combinaciones.forEach((combinacion, index) => {
+                            const combinacionElement = document.createElement('div');
+                            combinacionElement.className = 'combinacion';
+                            combinacionElement.innerHTML = `<h3>Combinación ${index + 1}:</h3>`;
+                            combinacion.forEach(horario => {
+                                combinacionElement.innerHTML += `<li>${horario.dia} ${horario.hora} -> ${horario.materia} (${horario.tipo})</li>`;
                             });
-                        } else {
-                            combinacionesContainer.innerHTML = 'No hay combinaciones posibles, a menos que consigas un Giratiempo.';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error al actualizar combinaciones:', error);
-                    });
-                }
-
-                document.querySelectorAll('input[type="radio"][name="turno"]').forEach(radio => {
-                    radio.addEventListener('change', updateTurnoSelection);
+                            combinacionesContainer.appendChild(combinacionElement);
+                        });
+                    } else {
+                        combinacionesContainer.innerHTML = 'No hay combinaciones posibles, a menos que consigas un Giratiempo.';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al actualizar combinaciones:', error);
                 });
+            }
 
-                document.querySelectorAll('input[name="turnos_seleccionados"], input[name="materias_seleccionadas"]').forEach(checkbox => {
-                    checkbox.addEventListener('change', updateTurnoSelection); // Se cambia para llamar a updateTurnoSelection, que ya maneja la llamada a updateCombinaciones
-                });
-
-                updateTurnoSelection(); // Esto garantiza que la selección inicial se aplique correctamente.
+            document.querySelectorAll('input[type="radio"][name="turno"]').forEach(radio => {
+                radio.addEventListener('change', updateTurnoSelection); // Asegura que cualquier cambio en la selección del turno actualice las combinaciones
             });
+
+            document.querySelectorAll('input[name="turnos_seleccionados"], input[name="materias_seleccionadas"]').forEach(checkbox => {
+                checkbox.addEventListener('change', updateCombinaciones); // Permite actualizar las combinaciones al cambiar cualquier checkbox después de seleccionar "Personalizado"
+            });
+
+            // Inicialización al cargar la página
+            updateTurnoSelection(); // Asegura que el estado inicial se aplique correctamente
+        });
         </script>
+
 
 
 
