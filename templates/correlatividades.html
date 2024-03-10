@@ -80,6 +80,30 @@
             });
         }
 
+            const gruposElectivasCerradas = [
+                ['aprobada_22', 'aprobada_23'], // Primer grupo
+                ['aprobada_29', 'aprobada_30'], // Segundo grupo
+                ['aprobada_31', 'aprobada_32']  // Tercer grupo
+            ];
+
+            gruposElectivasCerradas.forEach(grupo => {
+                grupo.forEach(nombreCheckbox => {
+                    const checkbox = document.querySelector(`input[name="${nombreCheckbox}"]`);
+                    checkbox.addEventListener('change', function() {
+                        grupo.forEach(otroNombreCheckbox => {
+                            if (otroNombreCheckbox !== nombreCheckbox) {
+                                const otroCheckbox = document.querySelector(`input[name="${otroNombreCheckbox}"]`);
+                                otroCheckbox.checked = this.checked; // Sincroniza el estado con el otro checkbox del grupo
+                                // Llama a actualizarMateria para la materia relacionada
+                                const materiaId = otroNombreCheckbox.split('_')[1];
+                                const cursada = document.querySelector(`input[name="cursada_${materiaId}"]`).checked;
+                                actualizarMateria(materiaId, cursada, this.checked);
+                            }
+                        });
+                    });
+                });
+            });
+
         function actualizarInterfaz(materias) {
 
             if (!Array.isArray(materias)) {

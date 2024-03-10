@@ -33,19 +33,19 @@ materias = [
     {"id": 19, "nombre": "Teoría y Análisis de las Artes Dramáticas", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [[10, 11, 12]]}},
     {"id": 20, "nombre": "Taller de Semiótica", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [6, 7]}},
     {"id": 21, "nombre": "Taller de Géneros", "habilitada": False, "requisitos": {"cursada": [14], "aprobada": [6, 7, [10, 11, 12]]}},
-    {"id": 22, "nombre": "Narrativa Latinoamericana II", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [11]}},
-    {"id": 23, "nombre": "Narrativa Argentina II", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [10]}},
-    #{"id": 24, "nombre": "Teoría y Análisis de las Artes Audiovisuales", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [11, 10, 12]}},
-    #{"id": 25, "nombre": "Poesía Argentina y Latinoamericana II", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [9, 8, 15]}},
-    #{"id": 26, "nombre": "Taller de Dramaturgia I", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [6, 7]}},
-    #{"id": 27, "nombre": "Estética General", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [8, 6, 7, 10, 11, 12]}},
-    #{"id": 28, "nombre": "Taller de Narrativa Audiovisual", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [6, 7, 14, 17]}},
-    #{"id": 29, "nombre": "Taller de Poesía III", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [17]}},
-    #{"id": 30, "nombre": "Taller de Narrativa III", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [14]}},
-    #{"id": 31, "nombre": "Narrativa Universal II", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [18]}},
-    #{"id": 32, "nombre": "Poesía Universal II", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [12]}},
-    #{"id": 33, "nombre": "Taller electivo", "habilitada": False, "requisitos": {"cursada": [], "aprobada": "al menos 21 materias"}},
-    #{"id": 34, "nombre": "Seminario o Asignatura teórica electiva", "habilitada": False, "requisitos": {"cursada": [], "aprobada": "al menos 21 materias"}},
+    {"id": 22, "nombre": "Narrativa Latinoamericana II (Electiva cerrada 1)", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [11]}},
+    {"id": 23, "nombre": "Narrativa Argentina II (Electiva cerrada 1)", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [10]}},
+    {"id": 24, "nombre": "Teoría y Análisis de las Artes Audiovisuales", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [[11, 10, 12]]}},
+    {"id": 25, "nombre": "Poesía Argentina y Latinoamericana II", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [9, 8, 15]}},
+    {"id": 26, "nombre": "Taller de Dramaturgia I", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [6, 7]}},
+    {"id": 27, "nombre": "Estética General", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [8, 6, 7, 10, 11, 12]}},
+    {"id": 28, "nombre": "Taller de Narrativa Audiovisual", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [6, 7, [14, 17]]}},
+    {"id": 29, "nombre": "Taller de Poesía III (Electiva cerrada 2)", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [17]}},
+    {"id": 30, "nombre": "Taller de Narrativa III (Electiva cerrada 2)", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [14]}},
+    {"id": 31, "nombre": "Narrativa Universal II (Electiva cerrada 3)", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [18]}},
+    {"id": 32, "nombre": "Poesía Universal II (Electiva cerrada 3)", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [12]}},
+    {"id": 33, "nombre": "Taller electivo", "habilitada": False, "requisitos": {"cursada": [], "aprobada": "al menos 21 materias"}},
+    {"id": 34, "nombre": "Seminario o Asignatura teórica electiva", "habilitada": False, "requisitos": {"cursada": [], "aprobada": "al menos 21 materias"}}
 ]
 
 def cargar_materias():
@@ -150,14 +150,20 @@ def generar_combinaciones(materias_seleccionadas, horarios, turnos_seleccionados
     return combinaciones_en_lista
 
 
-def check_requisites(materia, all_materias, total_materias_aprobadas):
+def check_requisites(materia, all_materias, total_materias_aprobadas=None):
     # Comprobar si la materia está habilitada basada en los requisitos 'cursada' y 'aprobada'
+    if total_materias_aprobadas is None:
+        total_materias_aprobadas = sum(1 for m in all_materias if m.get("aprobada", False))
     requisitos_cursada = materia["requisitos"].get("cursada", [])
     requisitos_aprobada = materia["requisitos"].get("aprobada", [])
+    total_materias_aprobadas = sum(1 for m in all_materias if m.get("aprobada", False))
 
     # Comprobar requisitos 'cursada'
     for req_id in requisitos_cursada:
-        if not any(m["cursada"] for m in all_materias if m["id"] == req_id):
+        if isinstance(req_id, list):  # Si es una lista, se requiere al menos una cursada de las listadas
+            if not any(m["cursada"] for m in all_materias if m["id"] in req_id):
+                return False
+        elif not any(m["cursada"] for m in all_materias if m["id"] == req_id):
             return False  # Requisito de cursada no cumplido
 
     # Comprobar requisitos 'aprobada'
@@ -165,7 +171,7 @@ def check_requisites(materia, all_materias, total_materias_aprobadas):
         if isinstance(req, list):  # Es una lista de requisitos opcionales
             if not any(m["aprobada"] for m in all_materias if m["id"] in req):
                 return False  # Ninguno de los requisitos opcionales está aprobado
-        elif isinstance(req, str) and req.startswith("al menos"):
+        elif isinstance(req, str) and "al menos" in req:
             # Caso especial "al menos X materias aprobadas"
             numero_requerido = int(req.split()[2])  # Extrae el número después de 'al menos'
             if total_materias_aprobadas < numero_requerido:
@@ -175,6 +181,7 @@ def check_requisites(materia, all_materias, total_materias_aprobadas):
                 return False  # Requisito de aprobada no cumplido
 
     return True  # Todos los requisitos están cumplidos
+
 
 @app.route('/correlatividades')
 def correlatividades():
