@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Correlatividades - Artes de la Escritura</title>
+    <style>
+        .materia-label {
+            display: inline-block;
+            padding: 5px;
+            border-radius: 4px;
+            margin-right: 10px;
+            color: black;
+        }
+
+        .materia-habilitada {
+            background-color: #ffff99; /* Un amarillo menos intenso */
+        }
+
+        .materia-deshabilitada {
+            background-color: #ffcccc; /* Un rojo menos intenso */
+        }
+
+        .materia-aprobada {
+            background-color: #ccffcc; /* Un verde menos intenso */
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body>
+    <img src="{{ url_for('static', filename='ca.svg') }}" alt="Descripción de la imagen" class="header-image">
+        <!-- Botones de Navegación -->
+    <div class="navigation-buttons">
+        <a href="{{ url_for('index') }}" class="{{ 'active' if request.path == url_for('index') else '' }}">Generador de cursadas</a>
+        <a href="{{ url_for('correlatividades') }}" class="{{ 'active' if request.path == url_for('correlatividades') else '' }}">Correlatividades</a>
+    </div>
+    <h1>Correlatividades - Artes de la Escritura</h1>
+    <div>
+        {% for materia in materias %}
+        <div>
+            <span class="materia-label {{ 'materia-aprobada' if materia.aprobada else ('materia-habilitada' if materia.habilitada else 'materia-deshabilitada') }}"
+                  data-id="{{ materia.id }}">
+                {{ materia.nombre }}
+            </span>
+            <input type="checkbox" name="cursada_{{ materia.id }}" value="1"
+                   {% if materia.cursada %} checked {% endif %}
+                   {{ 'disabled' if not materia.habilitada }}> Cursada
+            <input type="checkbox" name="aprobada_{{ materia.id }}" value="1"
+                   {% if materia.aprobada %} checked {% endif %}
+                   {{ 'disabled' if not materia.habilitada }}> Aprobada
+        </div>
+        {% endfor %}
+    </div>
+    <br>
+    <button type="button" id="limpiar">Limpiar</button>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        function actualizarMateria(materiaId, cursada, aprobada) {
+            // Return the fetch promise so that it can be used with Promise.all
+            return fetch('/actualizar-materia', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ materiaId: parseInt(materiaId, 10), cursada, aprobada }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data)
+                actualizarInterfaz(data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+
+        function actualizarInterfaz(materias) {
+
+            if (!Array.isArray(materias)) {
+                console.error('Error: la respuesta no es un array.', materias);
+                return; // Sale de la función si 'materias' no es un array
+            }
+            materias.forEach(materia => {
+                // Asumiendo que cada materia tiene un span con una clase 'materia-label' y un 'data-id' correspondiente
+                const materiaSpan = document.querySelector(`.materia-label[data-id="${materia.id}"]`);
+                materiaSpan.classList.remove('materia-habilitada', 'materia-deshabilitada', 'materia-aprobada');
+                if (materia.aprobada) {
+                    materiaSpan.classList.add('materia-aprobada');
+                } else if (materia.habilitada) {
+                    materiaSpan.classList.add('materia-habilitada');
+                } else {
+                    materiaSpan.classList.add('materia-deshabilitada');
+                }
+
+                // También actualizamos el estado de los checkboxes
+                const cursadaCheckbox = document.querySelector(`input[name="cursada_${materia.id}"]`);
+                const aprobadaCheckbox = document.querySelector(`input[name="aprobada_${materia.id}"]`);
+                cursadaCheckbox.checked = materia.cursada;
+                aprobadaCheckbox.checked = materia.aprobada;
+                cursadaCheckbox.disabled = !materia.habilitada;
+                aprobadaCheckbox.disabled = !materia.habilitada;
+            });
+        }
+
+        document.querySelectorAll('input[name^="aprobada_"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const materiaId = this.name.split('_')[1];
+                const cursadaCheckbox = document.querySelector(`input[name="cursada_${materiaId}"]`);
+                if (this.checked && !cursadaCheckbox.checked) {
+                    // Marcar como cursada si no lo está
+                    cursadaCheckbox.checked = true;
+                }
+                const cursada = cursadaCheckbox.checked;
+                const aprobada = this.checked;
+                actualizarMateria(materiaId, cursada, aprobada);
+            });
+        });
+
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const nameParts = this.name.split('_');
+                const materiaId = nameParts[1];
+                const isCursada = nameParts[0] === "cursada";
+                const cursadaCheckbox = document.querySelector(`input[name="cursada_${materiaId}"]`);
+                const aprobadaCheckbox = document.querySelector(`input[name="aprobada_${materiaId}"]`);
+
+                if(isCursada && !this.checked) {
+                    // Si se desmarca "Cursada", también desmarca "Aprobada"
+                    aprobadaCheckbox.checked = false;
+                }
+
+                const cursada = cursadaCheckbox.checked;
+                const aprobada = aprobadaCheckbox.checked;
+
+                actualizarMateria(materiaId, cursada, aprobada);
+            });
+        });
+
+        function limpiarCheckboxes() {
+            const updates = Array.from(document.querySelectorAll('input[type="checkbox"]')).map(checkbox => {
+                checkbox.checked = false;
+                const materiaId = checkbox.name.split('_')[1];
+                return actualizarMateria(materiaId, false, false);
+            });
+
+            Promise.all(updates).then(() => {
+                console.log("Todas las materias han sido actualizadas después de limpiar.");
+            });
+        }
+
+
+        // Controlador para el botón "Limpiar"
+        document.getElementById('limpiar').addEventListener('click', function() {
+            limpiarCheckboxes();
+        });
+    });
+    </script>
+</body>
+</html>

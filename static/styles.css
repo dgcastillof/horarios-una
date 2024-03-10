@@ -24,3 +24,31 @@ body {
     margin-top: 20px; /* Ajusta el valor según necesites */
     margin-bottom: 20px; /* Ajusta el valor según necesites */
 }
+
+/* Estilos adicionales para tus checkboxes podrían ir aquí */
+.checkbox-cursada,
+.checkbox-aprobada {
+    cursor: pointer; /* Cambia el cursor para indicar que es clickeable */
+}
+
+/* Estilos para deshabilitar visualmente los checkboxes */
+.checkbox-cursada:disabled,
+.checkbox-aprobada:disabled {
+    cursor: not-allowed; /* Cambia el cursor para indicar que no es clickeable */
+    opacity: 0.6; /* Añade transparencia para indicar estado deshabilitado */
+}
+
+.navigation-buttons a {
+    display: inline-block;
+    margin: 10px;
+    padding: 10px;
+    background-color: #f0f0f0; /* Color de fondo */
+    color: #000; /* Color del texto */
+    text-decoration: none; /* Quitar el subrayado de los enlaces */
+    border: 1px solid #ccc; /* Borde ligero */
+    border-radius: 5px; /* Esquinas redondeadas */
+}
+
+.navigation-buttons a.active {
+    background-color: #e0e0e0; /* Fondo más oscuro para el botón activo */
+}

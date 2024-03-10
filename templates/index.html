@@ -31,6 +31,11 @@
 </head>
     <body>
     <img src="{{ url_for('static', filename='ca.svg') }}" alt="Descripción de la imagen" class="header-image">
+        <!-- Botones de Navegación -->
+    <div class="navigation-buttons">
+        <a href="{{ url_for('index') }}" class="{{ 'active' if request.path == url_for('index') else '' }}">Generador de cursadas</a>
+        <a href="{{ url_for('correlatividades') }}" class="{{ 'active' if request.path == url_for('correlatividades') else '' }}">Correlatividades</a>
+    </div>
     <h1>Selecciona las materias que querés cursar</h1>
     <form id="materiasForm">
         {% for materia in materias %}

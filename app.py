@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from itertools import product
 from flask import jsonify
 import os
@@ -11,7 +11,38 @@ port = int(os.environ.get("PORT", 5000))
 # Definir horarios y materias
 import csv
 
+materias = [
+    {"id": 1, "nombre": "Estado, Sociedad y Universidad", "habilitada": True, "requisitos": {"cursada": [], "aprobada": []}},
+    {"id": 2, "nombre": "Taller de Escritura I", "habilitada": True, "requisitos": {"cursada": [], "aprobada": []}},
+    {"id": 3, "nombre": "Introducción al Análisis del Discurso", "habilitada": True, "requisitos": {"cursada": [], "aprobada": []}},
+    {"id": 4, "nombre": "Herramientas del Lenguaje Verbal", "habilitada": True, "requisitos": {"cursada": [], "aprobada": []}},
+    {"id": 5, "nombre": "Taller de Escritura II", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [2]}},
+    {"id": 6, "nombre": "Taller de Narrativa I", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [1, 2, 3, 4, 5]}},
+    {"id": 7, "nombre": "Taller de Poesía I", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [1, 2, 3, 4, 5]}},
+    {"id": 8, "nombre": "Teoría y Análisis de las Artes de la Escritura", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [1, 2, 3, 4, 5]}},
+    {"id": 9, "nombre": "Morfología y Sintaxis", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [1, 2, 3, 4, 5]}},
+    {"id": 10, "nombre": "Narrativa Argentina I", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [1, 2, 3, 4, 5]}},
+    {"id": 11, "nombre": "Narrativa Latinoamericana I", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [1, 2, 3, 4, 5]}},
+    {"id": 12, "nombre": "Poesía Universal I", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [1, 2, 3, 4, 5]}},
+    {"id": 13, "nombre": "Taller de Crónica", "habilitada": False, "requisitos": {"cursada": [8, 9], "aprobada": [6, 7]}},
+    {"id": 14, "nombre": "Taller de Narrativa II", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [6, 8]}},
+    {"id": 15, "nombre": "Poesía Argentina y Latinoamericana I", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [8]}},
+    {"id": 16, "nombre": "Semiótica General", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [6, 7, 8]}},
+    {"id": 17, "nombre": "Taller de Poesía II", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [6, 8]}},
+    {"id": 18, "nombre": "Narrativa Universal I", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [8, 10, 11]}},
+    {"id": 19, "nombre": "Teoría y Análisis de las Artes Dramáticas", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [10, 11, 12]}},
+    {"id": 20, "nombre": "Taller de Semiótica", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [6, 7]}},
+    {"id": 21, "nombre": "Taller de Géneros", "habilitada": False, "requisitos": {"cursada": [14], "aprobada": [6, 7, 10, 11, 12]}},
+    {"id": 22, "nombre": "Narrativa Latinoamericana II", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [11]}},
+    {"id": 23, "nombre": "Narrativa Argentina II", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [10]}}
+]
 
+def cargar_materias():
+    # Asegurarse de que todas las materias tengan las claves 'cursada' y 'aprobada'
+    for materia in materias:
+        materia.setdefault('cursada', False)
+        materia.setdefault('aprobada', False)
+    return materias
 
 horarios = {}
 
@@ -106,6 +137,66 @@ def generar_combinaciones(materias_seleccionadas, horarios, turnos_seleccionados
 
     print("Combinaciones finales generadas:", combinaciones_en_lista)
     return combinaciones_en_lista
+
+@app.route('/correlatividades')
+def correlatividades():
+    # Aquí deberías cargar o definir las materias y sus estados
+    materias = cargar_materias()  # Esta función sería algo que necesitas implementar
+    return render_template('correlatividades.html', materias=materias)
+
+@app.route('/actualizar-correlatividades', methods=['POST'])
+def actualizar_correlatividades():
+    materias = cargar_materias()  # Asumiendo que tienes una función para cargar las materias
+    for materia in materias:
+        materia_id = str(materia["id"])
+        materia["cursada"] = 'cursada_' + materia_id in request.form
+        materia["aprobada"] = 'aprobada_' + materia_id in request.form
+    # Aquí deberías actualizar el estado de las materias en tu base de datos o estructura de datos
+
+    # Redirigir de nuevo a la página de correlatividades con la información actualizada
+    return redirect(url_for('correlatividades'))
+
+
+def actualizar_estado_materia(materia_id, cursada, aprobada):
+    # Encuentra la materia y actualiza su estado
+    for materia in materias:
+        if materia["id"] == materia_id:
+            materia["cursada"] = cursada
+            materia["aprobada"] = aprobada
+            break  # No necesitas seguir iterando una vez que encuentres la materia
+
+    # Reevaluar las habilitaciones de materias aquí
+    for materia in materias:
+        # Asegúrate de que cada materia tenga las claves 'cursada' y 'aprobada' inicializadas
+        materia.setdefault('cursada', False)
+        materia.setdefault('aprobada', False)
+
+        # Comprobar requisitos de aprobación
+        requisitos = materia.get('requisitos', {})
+        aprobadas_necesarias = requisitos.get('aprobada', [])
+        materia['habilitada'] = all(
+            any(m.get('aprobada', False) for m in materias if m['id'] == req_id)
+            for req_id in aprobadas_necesarias
+        ) if aprobadas_necesarias else True  # Si no hay requisitos, la materia está habilitada por defecto
+
+    # Devuelve la lista actualizada de materias para la respuesta de la ruta
+    return materias
+
+
+
+@app.route('/actualizar-materia', methods=['POST'])
+def actualizar_materia():
+    data = request.get_json()  # Asegúrate de obtener los datos JSON correctamente
+    materia_id = data['materiaId']
+    cursada = data['cursada']
+    aprobada = data['aprobada']
+
+    # Llama a una función que actualizará el estado de la materia y recalcula las habilitaciones
+    materias_actualizadas = actualizar_estado_materia(materia_id, cursada, aprobada)
+
+    # Devuelve la lista completa de materias actualizadas
+    return jsonify(materias_actualizadas)
+
 
 
 def cumple_horarios_disponibles(combinacion, turnos_seleccionados):
