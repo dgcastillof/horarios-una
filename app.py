@@ -27,14 +27,25 @@ materias = [
     {"id": 13, "nombre": "Taller de Crónica", "habilitada": False, "requisitos": {"cursada": [8, 9], "aprobada": [6, 7]}},
     {"id": 14, "nombre": "Taller de Narrativa II", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [6, 8]}},
     {"id": 15, "nombre": "Poesía Argentina y Latinoamericana I", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [8]}},
-    {"id": 16, "nombre": "Semiótica General", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [6, 7, 8]}},
+    {"id": 16, "nombre": "Semiótica General", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [6, [7, 8]]}},
     {"id": 17, "nombre": "Taller de Poesía II", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [6, 8]}},
-    {"id": 18, "nombre": "Narrativa Universal I", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [8, 10, 11]}},
-    {"id": 19, "nombre": "Teoría y Análisis de las Artes Dramáticas", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [10, 11, 12]}},
+    {"id": 18, "nombre": "Narrativa Universal I", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [8, [10, 11]]}},
+    {"id": 19, "nombre": "Teoría y Análisis de las Artes Dramáticas", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [[10, 11, 12]]}},
     {"id": 20, "nombre": "Taller de Semiótica", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [6, 7]}},
-    {"id": 21, "nombre": "Taller de Géneros", "habilitada": False, "requisitos": {"cursada": [14], "aprobada": [6, 7, 10, 11, 12]}},
+    {"id": 21, "nombre": "Taller de Géneros", "habilitada": False, "requisitos": {"cursada": [14], "aprobada": [6, 7, [10, 11, 12]]}},
     {"id": 22, "nombre": "Narrativa Latinoamericana II", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [11]}},
-    {"id": 23, "nombre": "Narrativa Argentina II", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [10]}}
+    {"id": 23, "nombre": "Narrativa Argentina II", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [10]}},
+    #{"id": 24, "nombre": "Teoría y Análisis de las Artes Audiovisuales", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [11, 10, 12]}},
+    #{"id": 25, "nombre": "Poesía Argentina y Latinoamericana II", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [9, 8, 15]}},
+    #{"id": 26, "nombre": "Taller de Dramaturgia I", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [6, 7]}},
+    #{"id": 27, "nombre": "Estética General", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [8, 6, 7, 10, 11, 12]}},
+    #{"id": 28, "nombre": "Taller de Narrativa Audiovisual", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [6, 7, 14, 17]}},
+    #{"id": 29, "nombre": "Taller de Poesía III", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [17]}},
+    #{"id": 30, "nombre": "Taller de Narrativa III", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [14]}},
+    #{"id": 31, "nombre": "Narrativa Universal II", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [18]}},
+    #{"id": 32, "nombre": "Poesía Universal II", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [12]}},
+    #{"id": 33, "nombre": "Taller electivo", "habilitada": False, "requisitos": {"cursada": [], "aprobada": "al menos 21 materias"}},
+    #{"id": 34, "nombre": "Seminario o Asignatura teórica electiva", "habilitada": False, "requisitos": {"cursada": [], "aprobada": "al menos 21 materias"}},
 ]
 
 def cargar_materias():
@@ -138,6 +149,33 @@ def generar_combinaciones(materias_seleccionadas, horarios, turnos_seleccionados
     print("Combinaciones finales generadas:", combinaciones_en_lista)
     return combinaciones_en_lista
 
+
+def check_requisites(materia, all_materias, total_materias_aprobadas):
+    # Comprobar si la materia está habilitada basada en los requisitos 'cursada' y 'aprobada'
+    requisitos_cursada = materia["requisitos"].get("cursada", [])
+    requisitos_aprobada = materia["requisitos"].get("aprobada", [])
+
+    # Comprobar requisitos 'cursada'
+    for req_id in requisitos_cursada:
+        if not any(m["cursada"] for m in all_materias if m["id"] == req_id):
+            return False  # Requisito de cursada no cumplido
+
+    # Comprobar requisitos 'aprobada'
+    for req in requisitos_aprobada:
+        if isinstance(req, list):  # Es una lista de requisitos opcionales
+            if not any(m["aprobada"] for m in all_materias if m["id"] in req):
+                return False  # Ninguno de los requisitos opcionales está aprobado
+        elif isinstance(req, str) and req.startswith("al menos"):
+            # Caso especial "al menos X materias aprobadas"
+            numero_requerido = int(req.split()[2])  # Extrae el número después de 'al menos'
+            if total_materias_aprobadas < numero_requerido:
+                return False  # No cumple con el mínimo de materias aprobadas
+        else:
+            if not any(m["aprobada"] for m in all_materias if m["id"] == req):
+                return False  # Requisito de aprobada no cumplido
+
+    return True  # Todos los requisitos están cumplidos
+
 @app.route('/correlatividades')
 def correlatividades():
     # Aquí deberías cargar o definir las materias y sus estados
@@ -159,27 +197,20 @@ def actualizar_correlatividades():
 
 def actualizar_estado_materia(materia_id, cursada, aprobada):
     # Encuentra la materia y actualiza su estado
+    materia_actualizada = None
     for materia in materias:
         if materia["id"] == materia_id:
             materia["cursada"] = cursada
             materia["aprobada"] = aprobada
-            break  # No necesitas seguir iterando una vez que encuentres la materia
+            materia_actualizada = materia
+            break
 
-    # Reevaluar las habilitaciones de materias aquí
-    for materia in materias:
-        # Asegúrate de que cada materia tenga las claves 'cursada' y 'aprobada' inicializadas
-        materia.setdefault('cursada', False)
-        materia.setdefault('aprobada', False)
+    # Si se actualizó una materia, reevaluar las habilitaciones de materias aquí
+    total_materias_aprobadas = sum(m["aprobada"] for m in materias)  # Calcula el total de materias aprobadas
+    if materia_actualizada:
+        for materia in materias:
+            materia["habilitada"] = check_requisites(materia, materias, total_materias_aprobadas)
 
-        # Comprobar requisitos de aprobación
-        requisitos = materia.get('requisitos', {})
-        aprobadas_necesarias = requisitos.get('aprobada', [])
-        materia['habilitada'] = all(
-            any(m.get('aprobada', False) for m in materias if m['id'] == req_id)
-            for req_id in aprobadas_necesarias
-        ) if aprobadas_necesarias else True  # Si no hay requisitos, la materia está habilitada por defecto
-
-    # Devuelve la lista actualizada de materias para la respuesta de la ruta
     return materias
 
 
