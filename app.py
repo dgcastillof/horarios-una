@@ -24,7 +24,7 @@ materias = [
     {"id": 10, "nombre": "Narrativa Argentina I", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [1, 2, 3, 4, 5]}},
     {"id": 11, "nombre": "Narrativa Latinoamericana I", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [1, 2, 3, 4, 5]}},
     {"id": 12, "nombre": "Poesía Universal I", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [1, 2, 3, 4, 5]}},
-    {"id": 13, "nombre": "Taller de Crónica", "habilitada": False, "requisitos": {"cursada": [8, 9], "aprobada": [6, 7]}},
+    {"id": 13, "nombre": "Taller de Crónica", "habilitada": False, "requisitos": {"cursada": [[8, 9]], "aprobada": [[6, 7]]}},
     {"id": 14, "nombre": "Taller de Narrativa II", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [6, 8]}},
     {"id": 15, "nombre": "Poesía Argentina y Latinoamericana I", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [8]}},
     {"id": 16, "nombre": "Semiótica General", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [6, [7, 8]]}},
@@ -168,8 +168,12 @@ def check_requisites(materia, all_materias):
 
     # Comprobar requisitos 'cursada'
     for req_id in requisitos_cursada:
-        if not any(m["cursada"] for m in all_materias if m["id"] == req_id):
-            return False  # Si falta alguno, retorna False
+        if isinstance(req_id, list):  # Es una lista de requisitos opcionales
+            if not any(any(m["cursada"] for m in all_materias if m["id"] == sub_req) for sub_req in req_id):
+                return False  # Ninguno de los requisitos opcionales está cursado
+        else:
+            if not any(m["cursada"] for m in all_materias if m["id"] == req_id):
+                return False  # Requisito de cursada no cumplido
 
     # Comprobar requisitos 'aprobada'
     if isinstance(requisitos_aprobada, list):
