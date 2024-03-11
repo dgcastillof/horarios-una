@@ -39,20 +39,32 @@
     <h1>Correlatividades - Artes de la Escritura</h1>
     <div>
         {% for materia in materias %}
-        <div>
-            <span class="materia-label {{ 'materia-aprobada' if materia.aprobada else ('materia-habilitada' if materia.habilitada else 'materia-deshabilitada') }}"
-                  data-id="{{ materia.id }}">
-                {{ materia.nombre }}
-            </span>
-            <input type="checkbox" name="cursada_{{ materia.id }}" value="1"
-                   {% if materia.cursada %} checked {% endif %}
-                   {{ 'disabled' if not materia.habilitada }}> Cursada
-            <input type="checkbox" name="aprobada_{{ materia.id }}" value="1"
-                   {% if materia.aprobada %} checked {% endif %}
-                   {{ 'disabled' if not materia.habilitada }}> Aprobada
-        </div>
+            {% if materia.id == 1 %}
+                <h2>CINO</h2>
+            {% elif materia.id == 6 %}
+                <h2>Primer año</h2>
+            {% elif materia.id == 14 %}
+                <h2>Segundo año</h2>
+            {% elif materia.id == 24 %}
+                <h2>Tercer año</h2>
+            {% elif materia.id == 35 %}
+                <h2>Cuarto año</h2>
+            {% endif %}
+            <div>
+                <span class="materia-label {{ 'materia-aprobada' if materia.aprobada else ('materia-habilitada' if materia.habilitada else 'materia-deshabilitada') }}"
+                      data-id="{{ materia.id }}">
+                    {{ materia.nombre }}
+                </span>
+                <input type="checkbox" name="cursada_{{ materia.id }}" value="1"
+                       {% if materia.cursada %} checked {% endif %}
+                       {{ 'disabled' if not materia.habilitada }}> Cursada
+                <input type="checkbox" name="aprobada_{{ materia.id }}" value="1"
+                       {% if materia.aprobada %} checked {% endif %}
+                       {{ 'disabled' if not materia.habilitada }}> Aprobada
+            </div>
         {% endfor %}
     </div>
+
     <br>
     <button type="button" id="limpiar">Limpiar</button>
 

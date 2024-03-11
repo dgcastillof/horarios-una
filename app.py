@@ -45,7 +45,15 @@ materias = [
     {"id": 31, "nombre": "Narrativa Universal II (Electiva cerrada 3)", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [18]}},
     {"id": 32, "nombre": "Poesía Universal II (Electiva cerrada 3)", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [12]}},
     {"id": 33, "nombre": "Taller electivo", "habilitada": False, "requisitos": {"cursada": [], "aprobada": "al menos 21 materias"}},
-    {"id": 34, "nombre": "Seminario o Asignatura teórica electiva", "habilitada": False, "requisitos": {"cursada": [], "aprobada": "al menos 21 materias"}}
+    {"id": 34, "nombre": "Seminario o Asignatura teórica electiva", "habilitada": False, "requisitos": {"cursada": [], "aprobada": "al menos 21 materias"}},
+    {"id": 35, "nombre": "Taller de Ensayo", "habilitada": False, "requisitos": {"cursada": [], "aprobada": "al menos 21 materias", "adicionales": [(22, 23), (14, 17), (18, 25)]}},
+    {"id": 36, "nombre": "Edición y Legislación", "habilitada": False, "requisitos": {"cursada": [], "aprobada": "al menos 21 materias", "adicionales": [16]}},
+    {"id": 37, "nombre": "Historia de la Lectura y la Escritura", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [16]}},
+    {"id": 38, "nombre": "Seminario o Asignatura teórica electiva", "habilitada": False, "requisitos": {"cursada": [], "aprobada": "al menos 21 materias"}},
+    {"id": 39, "nombre": "Espacio curricular electivo", "habilitada": False, "requisitos": {"cursada": [], "aprobada": "al menos 21 materias"}},
+    {"id": 40, "nombre": "Laboratorio de experimentación", "habilitada": False, "requisitos": {"cursada": [], "aprobada": "al menos 21 materias", "adicionales": [14, 17, 20, 26, 28]}},
+    {"id": 41, "nombre": "Proyectual de Obra I", "habilitada": False, "requisitos": {"cursada": [], "aprobada": "al menos 30 materias", "adicionales": [13, 14, 17, 20, 21, 26, 28, (29, 39)]}},
+    {"id": 42, "nombre": "Proyectual de Obra II", "habilitada": False, "requisitos": {"cursada": [], "aprobada": [41]}}
 ]
 
 def cargar_materias():
@@ -150,37 +158,47 @@ def generar_combinaciones(materias_seleccionadas, horarios, turnos_seleccionados
     return combinaciones_en_lista
 
 
-def check_requisites(materia, all_materias, total_materias_aprobadas=None):
-    # Comprobar si la materia está habilitada basada en los requisitos 'cursada' y 'aprobada'
-    if total_materias_aprobadas is None:
-        total_materias_aprobadas = sum(1 for m in all_materias if m.get("aprobada", False))
+def check_requisites(materia, all_materias):
+    # Si necesitas calcular el total de materias aprobadas, hazlo una sola vez aquí
+    total_materias_aprobadas = sum(m["aprobada"] for m in all_materias)
+
     requisitos_cursada = materia["requisitos"].get("cursada", [])
     requisitos_aprobada = materia["requisitos"].get("aprobada", [])
-    total_materias_aprobadas = sum(1 for m in all_materias if m.get("aprobada", False))
+    requisitos_adicionales = materia["requisitos"].get("adicionales", [])
 
     # Comprobar requisitos 'cursada'
     for req_id in requisitos_cursada:
-        if isinstance(req_id, list):  # Si es una lista, se requiere al menos una cursada de las listadas
-            if not any(m["cursada"] for m in all_materias if m["id"] in req_id):
-                return False
-        elif not any(m["cursada"] for m in all_materias if m["id"] == req_id):
-            return False  # Requisito de cursada no cumplido
+        if not any(m["cursada"] for m in all_materias if m["id"] == req_id):
+            return False  # Si falta alguno, retorna False
 
     # Comprobar requisitos 'aprobada'
-    for req in requisitos_aprobada:
-        if isinstance(req, list):  # Es una lista de requisitos opcionales
-            if not any(m["aprobada"] for m in all_materias if m["id"] in req):
-                return False  # Ninguno de los requisitos opcionales está aprobado
-        elif isinstance(req, str) and "al menos" in req:
-            # Caso especial "al menos X materias aprobadas"
-            numero_requerido = int(req.split()[2])  # Extrae el número después de 'al menos'
-            if total_materias_aprobadas < numero_requerido:
-                return False  # No cumple con el mínimo de materias aprobadas
-        else:
-            if not any(m["aprobada"] for m in all_materias if m["id"] == req):
-                return False  # Requisito de aprobada no cumplido
+    if isinstance(requisitos_aprobada, list):
+        for req in requisitos_aprobada:
+            if isinstance(req, list):
+                # Si es una lista, verifica que al menos una esté aprobada
+                if not any(m["aprobada"] for m in all_materias if m["id"] in req):
+                    return False
+            elif isinstance(req, int):
+                # Si es un entero, verifica esa materia específica
+                if not any(m["aprobada"] for m in all_materias if m["id"] == req):
+                    return False
+    elif isinstance(requisitos_aprobada, str) and "al menos" in requisitos_aprobada:
+        numero_requerido = int(requisitos_aprobada.split()[2])
+        if total_materias_aprobadas < numero_requerido:
+            return False  # No cumple con el mínimo de materias aprobadas
 
-    return True  # Todos los requisitos están cumplidos
+    # Comprobar requisitos adicionales (si los hay)
+    for req_group in requisitos_adicionales:
+        if isinstance(req_group, tuple):
+            # Si es una tupla, verifica que al menos una del grupo esté aprobada
+            if not any(m["aprobada"] for m in all_materias if m["id"] in req_group):
+                return False
+        elif isinstance(req_group, int):
+            # Si es un entero, verifica esa materia específica
+            if not any(m["aprobada"] for m in all_materias if m["id"] == req_group):
+                return False
+
+    return True  # Si todas las comprobaciones son correctas, retorna True
 
 
 @app.route('/correlatividades')
@@ -216,7 +234,7 @@ def actualizar_estado_materia(materia_id, cursada, aprobada):
     total_materias_aprobadas = sum(m["aprobada"] for m in materias)  # Calcula el total de materias aprobadas
     if materia_actualizada:
         for materia in materias:
-            materia["habilitada"] = check_requisites(materia, materias, total_materias_aprobadas)
+            materia["habilitada"] = check_requisites(materia, materias)
 
     return materias
 
