@@ -28,7 +28,7 @@ materias = [
     {"id": 14, "nombre": "Taller de Narrativa II", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [6, 8]}},
     {"id": 15, "nombre": "Poesía Argentina y Latinoamericana I", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [8]}},
     {"id": 16, "nombre": "Semiótica General", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [6, [7, 8]]}},
-    {"id": 17, "nombre": "Taller de Poesía II", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [6, 8]}},
+    {"id": 17, "nombre": "Taller de Poesía II", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [7, 8]}},
     {"id": 18, "nombre": "Narrativa Universal I", "habilitada": False, "requisitos": {"cursada": [9], "aprobada": [8, [10, 11]]}},
     {"id": 19, "nombre": "Teoría y Análisis de las Artes Dramáticas", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [[10, 11, 12]]}},
     {"id": 20, "nombre": "Taller de Semiótica", "habilitada": False, "requisitos": {"cursada": [16], "aprobada": [6, 7]}},
