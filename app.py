@@ -287,16 +287,20 @@ def cumple_horarios_disponibles(combinacion, turnos_seleccionados):
     return True
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def index():
+    return render_template('index.html')
+
+@app.route('/generador_cursadas', methods=['GET', 'POST'])
+def generador_cursadas():
     materias_seleccionadas = []
     if request.method == 'POST':
         materias_seleccionadas = request.form.getlist('materias_seleccionadas')
+        # Suponiendo que tienes una función generar_combinaciones que hace algo útil
         combinaciones = generar_combinaciones(materias_seleccionadas, horarios, horarios_disponibles)
-        # Pasamos las materias seleccionadas de vuelta a la plantilla para mantener los checkboxes marcados
-        return render_template('index.html', materias=horarios.keys(), combinaciones=combinaciones, materias_seleccionadas=materias_seleccionadas)
+        return render_template('generador_cursadas.html', materias=horarios.keys(), combinaciones=combinaciones, materias_seleccionadas=materias_seleccionadas)
 
-    return render_template('index.html', materias=horarios.keys(), materias_seleccionadas=materias_seleccionadas)
+    return render_template('generador_cursadas.html', materias=horarios.keys(), materias_seleccionadas=materias_seleccionadas)
 
 
 @app.route('/get_combinaciones', methods=['POST'])

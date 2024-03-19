@@ -1,190 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
-        <style>
-            .grid-container {
-                display: grid;
-                grid-template-columns: auto repeat(5, 1fr); /* 1 columna para los turnos y 5 para los días */
-                gap: 5px; /* Espacio entre celdas */
-                align-items: center;
-                text-align: center;
-            }
-            .grid-container > div {
-                padding: 5px; /* Espaciado dentro de las celdas */
-            }
-            .turno {
-                grid-column: 1; /* Ubica los turnos en la primera columna */
-            }
-            .dia {
-                background-color: #7a4f9e; /* Color de fondo para los días */
-                color: white;
-            }
-            .checkbox-container {
-                display: flex;
-                justify-content: center; /* Centra el contenido de la celda */
-            }
-        </style>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <title>Utilidades UNA</title>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1061361963302482"
-     crossorigin="anonymous"></script>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                background-color: #f4f4f4;
+            }
+            .header-image {
+                max-width: 300px;
+                margin-bottom: 20px;
+            }
+            .title {
+                margin-bottom: 20px;
+                text-align: center;
+                color: #7a4f9e;
+            }
+            .navigation-buttons a {
+                display: inline-block;
+                background-color: #7a4f9e;
+                color: white;
+                padding: 10px 20px;
+                margin: 10px;
+                text-decoration: none;
+                border-radius: 5px;
+                transition: background-color 0.3s;
+            }
+            .navigation-buttons a:hover {
+                background-color: #5e3a75;
+            }
+        </style>
 </head>
-    <body>
-    <img src="{{ url_for('static', filename='ca.svg') }}" alt="Descripción de la imagen" class="header-image">
-        <!-- Botones de Navegación -->
+<body>
+    <img src="{{ url_for('static', filename='ca.svg') }}" alt="Logo UNA" class="header-image">
+    <h1 class="title">Artes de la Escritura - Utilidades</h1>
     <div class="navigation-buttons">
-        <a href="{{ url_for('index') }}" class="{{ 'active' if request.path == url_for('index') else '' }}">Generador de cursadas</a>
-        <a href="{{ url_for('correlatividades') }}" class="{{ 'active' if request.path == url_for('correlatividades') else '' }}">Correlatividades</a>
+        <a href="{{ url_for('correlatividades') }}">Correlatividades</a>
+        <a href="{{ url_for('generador_cursadas') }}">Generador de cursadas</a>
+        <a href="https://docs.google.com/spreadsheets/d/16pg95jTQFjgAJHBxDlU9F9nlvSw5DCp3-r-06oWrVQw/" target="_blank">Whatsapp - Ciclo profesional</a>
+        <a href="https://forms.gle/dxpRyfT6hH8AiWzY6" target="_blank">Dejá tu sugerencia</a>
     </div>
-    <h1>Selecciona las materias que querés cursar</h1>
-    <form id="materiasForm">
-        {% for materia in materias %}
-            <input type="checkbox" name="materias_seleccionadas" value="{{ materia }}"
-                   {% if materia in materias_seleccionadas %}checked="checked"{% endif %}>
-                   {{ materia }}<br>
-        {% endfor %}
-        <br>
-
-    <br> <!-- Espacio adicional antes del título, si es necesario -->
-    <h1>Selecciona los horarios que tenés disponibles para cursar</h1>
-        <div class="grid-container">
-            <div class="turno"></div> <!-- Espacio vacío para la esquina superior izquierda -->
-            <div class="dia">Lunes</div>
-            <div class="dia">Martes</div>
-            <div class="dia">Miércoles</div>
-            <div class="dia">Jueves</div>
-            <div class="dia">Viernes</div>
-            {% for turno in ["Mañana", "Tarde", "Noche"] %}
-                <div class="turno">{{ turno }}</div> <!-- Encabezado de turno -->
-                {% for dia in ["lunes", "martes", "miercoles", "jueves", "viernes"] %}
-                    <div class="checkbox-container">
-                        <input type="checkbox" name="turnos_seleccionados" value="{{dia}}-{{turno|lower}}" checked>
-                    </div>
-                {% endfor %}
-            {% endfor %}
-        </div>
-
-
-        <div style="margin-top: 20px;"></div> <!-- Ajusta el valor de 20px según necesites -->
-        <div id="seleccion-turno">
-            <input type="radio" id="mañana" name="turno" value="mañana">
-            <label for="mañana">Solo turno mañana</label><br>
-            <input type="radio" id="tarde" name="turno" value="tarde">
-            <label for="tarde">Solo turno tarde</label><br>
-            <input type="radio" id="noche" name="turno" value="noche">
-            <label for="noche">Solo turno noche</label><br>
-            <input type="radio" id="personalizado" name="turno" value="personalizado" checked>
-            <label for="personalizado">Personalizado</label><br>
-        </div>
-    </form>
-
-    <div id="combinaciones">
-        <h2>Posibles calendarios de cursada</h2> <!-- Este título debería estar siempre visible -->
-        {% if combinaciones %}
-            {% for opcion in combinaciones %}
-                <h3>Combinación {{ loop.index }}:</h3>
-                <ul>
-                    {% for horario in opcion %}
-                        <li>{{ horario.dia }} {{ horario.hora }} -> {{ horario.materia }} ({{ horario.tipo }})</li>
-                    {% endfor %}
-                </ul>
-            {% endfor %}
-        {% endif %}
-    </div>
-
-
-    <p style="font-size: small; text-align: left;">
-        Seguime en Twitter
-        <a href="https://x.com/shocasti" target="_blank">@shocasti</a>
-    </p>
-
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            function updateTurnoSelection() {
-                const turnoSeleccionado = document.querySelector('input[name="turno"]:checked').value;
-                const checkboxes = document.querySelectorAll('.checkbox-container input[type="checkbox"]');
-
-                // Marca todos los checkboxes y los habilita si "Personalizado" está seleccionado
-                if (turnoSeleccionado === "personalizado") {
-                    checkboxes.forEach(checkbox => {
-                        checkbox.checked = true;
-                        checkbox.disabled = false;
-                    });
-                } else {
-                    // Para los turnos específicos, se marcan y deshabilitan los checkboxes correspondientes
-                    checkboxes.forEach(checkbox => {
-                        const [dia, turnoCheckbox] = checkbox.value.split("-");
-                        if (turnoSeleccionado === turnoCheckbox) {
-                            checkbox.checked = true;
-                        } else {
-                            checkbox.checked = false;
-                        }
-                        checkbox.disabled = true; // Deshabilitar para evitar modificaciones
-                    });
-                }
-
-                // Llama a updateCombinaciones independientemente del radio seleccionado para actualizar las combinaciones
-                updateCombinaciones();
-            }
-
-            function updateCombinaciones() {
-                var materiasSeleccionadas = Array.from(document.querySelectorAll('input[name="materias_seleccionadas"]:checked')).map(el => el.value);
-                var turnosSeleccionados = Array.from(document.querySelectorAll('input[name="turnos_seleccionados"]:checked')).map(el => el.value);
-
-                fetch('/get_combinaciones', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        materias_seleccionadas: materiasSeleccionadas,
-                        turnos_seleccionados: turnosSeleccionados
-                    }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    const combinacionesContainer = document.getElementById('combinaciones');
-                    combinacionesContainer.innerHTML = ''; // Limpiar el contenedor previo a añadir nuevas combinaciones
-                    if (data.mensaje) {
-                        combinacionesContainer.innerHTML = `<p>${data.mensaje}</p>`;
-                    } else if (data.combinaciones.length > 0) {
-                        data.combinaciones.forEach((combinacion, index) => {
-                            const combinacionElement = document.createElement('div');
-                            combinacionElement.className = 'combinacion';
-                            combinacionElement.innerHTML = `<h3>Combinación ${index + 1}:</h3>`;
-                            combinacion.forEach(horario => {
-                                combinacionElement.innerHTML += `<li>${horario.dia} ${horario.hora} -> ${horario.materia} (${horario.tipo})</li>`;
-                            });
-                            combinacionesContainer.appendChild(combinacionElement);
-                        });
-                    } else {
-                        combinacionesContainer.innerHTML = 'No hay combinaciones posibles, a menos que consigas un Giratiempo.';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error al actualizar combinaciones:', error);
-                });
-            }
-
-            document.querySelectorAll('input[type="radio"][name="turno"]').forEach(radio => {
-                radio.addEventListener('change', updateTurnoSelection); // Asegura que cualquier cambio en la selección del turno actualice las combinaciones
-            });
-
-            document.querySelectorAll('input[name="turnos_seleccionados"], input[name="materias_seleccionadas"]').forEach(checkbox => {
-                checkbox.addEventListener('change', updateCombinaciones); // Permite actualizar las combinaciones al cambiar cualquier checkbox después de seleccionar "Personalizado"
-            });
-
-            // Inicialización al cargar la página
-            updateTurnoSelection(); // Asegura que el estado inicial se aplique correctamente
-        });
-        </script>
-
-
-
-
-
 </body>
 </html>
