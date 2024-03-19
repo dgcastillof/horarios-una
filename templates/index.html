@@ -38,7 +38,18 @@
                 transition: background-color 0.3s;
             }
             .navigation-buttons a:hover {
-                background-color: #5e3a75;
+                    background-color: #5e3a75;
+                }
+                .navigation-buttons a.suggestion-link {
+                background-color: #f8f8f8; /* Un blanco tenue para la sugerencia */
+                color: #333; /* Color de texto oscuro para contraste */
+            }
+            .navigation-buttons a.twitter-link {
+                background-color: rgb(21, 32, 43); /* Color de fondo de Twitter */
+                color: white; /* Texto en color blanco */
+            }
+            .navigation-buttons a.twitter-link:hover {
+                background-color: #1DA1F2; /* Un azul más claro para el hover */
             }
         </style>
 </head>
@@ -50,6 +61,7 @@
         <a href="{{ url_for('generador_cursadas') }}">Generador de cursadas</a>
         <a href="https://docs.google.com/spreadsheets/d/16pg95jTQFjgAJHBxDlU9F9nlvSw5DCp3-r-06oWrVQw/" target="_blank">Whatsapp - Ciclo profesional</a>
         <a href="https://forms.gle/dxpRyfT6hH8AiWzY6" target="_blank">Dejá tu sugerencia</a>
+        <a href="https://twitter.com/shocasti" class="twitter-link" target="_blank">Seguime en Twitter</a>
     </div>
 </body>
 </html>
