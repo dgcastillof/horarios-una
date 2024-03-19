@@ -303,14 +303,6 @@ def generador_cursadas():
     return render_template('generador_cursadas.html', materias=horarios.keys(), materias_seleccionadas=materias_seleccionadas)
 
 
-@app.before_request
-def before_request():
-    if request.url.startswith('http://'):
-        url = request.url.replace('http://', 'https://', 1)
-        code = 301
-        return redirect(url, code=code)
-
-
 @app.route('/get_combinaciones', methods=['POST'])
 def get_combinaciones():
     data = request.json
